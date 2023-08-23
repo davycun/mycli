@@ -1,6 +1,12 @@
-FROM python:3.9
+FROM python:3.9-alpine as builder
 
 COPY . /app
-RUN cd /app && pip install -e .
+WORKDIR /app
+RUN apk add --no-cache --update --virtual .tmp-build-deps gcc linux-headers \
+    && cd /app \
+    && pip install -e .
 
-CMD mycli
+FROM python:3.9-alpine 
+COPY --from=builder  /usr/local/bin/mycli /usr/local/bin/mycli
+
+CMD ["mycli","--help"]
